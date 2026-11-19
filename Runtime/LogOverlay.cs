@@ -23,7 +23,7 @@ namespace VIB.LogOverlay
         const int MaxEntries = 300;           // nombre de logs conservés
         const int MaxMessageLength = 600;     // tronque les messages trop longs
         const int MaxDisplayedChars = 14000;  // limite de vertices d'un Text uGUI (~65k)
-        const float OverlayAlpha = 0.8f;
+        const float OverlayAlpha = 0.9f;
         const float ScrollStep = 80f;         // pixels par cran de molette
         const float FilterButtonWidth = 190f;
         const float FilterButtonGap = 10f;

@@ -1,6 +1,6 @@
 # VIB Log Overlay
 
-Overlay de logs affiché en jeu (build + éditeur), au-dessus de toute l'UI, à 80 % d'opacité.
+Overlay de logs affiché en jeu (build + éditeur), au-dessus de toute l'UI, à 90 % d'opacité.
 
 ## Raccourcis
 | Touche | Action |
