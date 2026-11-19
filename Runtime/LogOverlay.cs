@@ -27,6 +27,7 @@ namespace VIB.LogOverlay
         const float ScrollStep = 80f;         // pixels par cran de molette
         const float FilterButtonWidth = 190f;
         const float FilterButtonGap = 10f;
+        const float OpenFileButtonWidth = 210f;
 
         struct LogEntry
         {
@@ -66,6 +67,7 @@ namespace VIB.LogOverlay
         readonly RectTransform[] filterButtons = new RectTransform[3];
         readonly Image[] filterButtonImages = new Image[3];
         readonly Text[] filterButtonTexts = new Text[3];
+        RectTransform openFileButton;
 
         public static bool IsVisible => instance != null && instance.visible;
         public static void Toggle() { if (instance != null) instance.SetVisible(!instance.visible); }
@@ -142,7 +144,10 @@ namespace VIB.LogOverlay
                     if (RectTransformUtility.RectangleContainsScreenPoint(filterButtons[i], mouse, null))
                         ToggleLevel(i);
                 }
+                if (RectTransformUtility.RectangleContainsScreenPoint(openFileButton, mouse, null))
+                    OpenLogFile();
             }
+            if (ctrl && KeyDown(Key_O)) OpenLogFile();
 
             if (dirty)
                 Refresh();
@@ -153,11 +158,11 @@ namespace VIB.LogOverlay
         #region Input (ancien Input Manager ou nouveau Input System)
 
         const int Key_Ctrl = 0, Key_H = 1, Key_L = 2, Key_PageUp = 3, Key_PageDown = 4, Key_End = 5,
-                  Key_1 = 6, Key_2 = 7, Key_3 = 8;
+                  Key_1 = 6, Key_2 = 7, Key_3 = 8, Key_O = 9;
 
 #if ENABLE_LEGACY_INPUT_MANAGER
         static readonly KeyCode[] legacyKeys = { KeyCode.LeftControl, KeyCode.H, KeyCode.L, KeyCode.PageUp, KeyCode.PageDown, KeyCode.End,
-                                                 KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3 };
+                                                 KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.O };
         static bool KeyHeld(int k) => Input.GetKey(legacyKeys[k]) || (k == Key_Ctrl && Input.GetKey(KeyCode.RightControl));
         static bool KeyDown(int k) => Input.GetKeyDown(legacyKeys[k]);
         static float ScrollDelta() => Input.mouseScrollDelta.y;
@@ -165,7 +170,7 @@ namespace VIB.LogOverlay
         static Vector2 MousePosition() => Input.mousePosition;
 #elif ENABLE_INPUT_SYSTEM && LOGOVERLAY_INPUT_SYSTEM
         static readonly Key[] newKeys = { Key.LeftCtrl, Key.H, Key.L, Key.PageUp, Key.PageDown, Key.End,
-                                          Key.Digit1, Key.Digit2, Key.Digit3 };
+                                          Key.Digit1, Key.Digit2, Key.Digit3, Key.O };
         static bool MouseClicked() => Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame;
         static Vector2 MousePosition() => Mouse.current != null ? Mouse.current.position.ReadValue() : Vector2.zero;
         static bool KeyHeld(int k)
@@ -239,6 +244,19 @@ namespace VIB.LogOverlay
             }
         }
 
+        /// <summary>Ouvre le fichier de log Unity (Player.log en build, Editor.log dans l'éditeur) avec l'appli par défaut.</summary>
+        public static void OpenLogFile()
+        {
+            string path = Application.consoleLogPath;
+            if (string.IsNullOrEmpty(path) || !System.IO.File.Exists(path))
+            {
+                Debug.LogWarning("[LogOverlay] Fichier de log introuvable (lancé avec -nolog ?) : " + path);
+                return;
+            }
+            Debug.Log("[LogOverlay] Ouverture du fichier de log : " + path);
+            Application.OpenURL(new Uri(path).AbsoluteUri);
+        }
+
         void ToggleLevel(int level)
         {
             levelShown[level] = !levelShown[level];
@@ -283,7 +301,7 @@ namespace VIB.LogOverlay
             dirty = false;
             headerText.text =
                 "LOGS" +
-                "      <size=14><color=#AAAAAA>Ctrl+H : masquer  |  Ctrl+L : vider  |  Ctrl+1/2/3 : filtres  |  Molette / PageUp / PageDown : défiler  |  Fin : suivre</color></size>";
+                "      <size=14><color=#AAAAAA>Ctrl+H : masquer  |  Ctrl+L : vider  |  Ctrl+1/2/3 : filtres  |  Ctrl+O : fichier  |  Molette/PgUp/PgDn : défiler  |  Fin : suivre</color></size>";
             UpdateFilterButtons();
 
             // On part des plus récents en remontant, pour respecter la limite de caractères
@@ -381,7 +399,7 @@ namespace VIB.LogOverlay
             header.anchorMax = new Vector2(1, 1);
             header.pivot = new Vector2(0.5f, 1);
             header.offsetMin = new Vector2(20, -50);
-            header.offsetMax = new Vector2(-20 - 3 * (FilterButtonWidth + FilterButtonGap), -10);
+            header.offsetMax = new Vector2(-20 - 3 * (FilterButtonWidth + FilterButtonGap) - (OpenFileButtonWidth + FilterButtonGap), -10);
             headerText = header.gameObject.AddComponent<Text>();
             headerText.font = font;
             headerText.fontSize = 22;
@@ -418,6 +436,27 @@ namespace VIB.LogOverlay
                 filterButtonImages[i] = img;
                 filterButtonTexts[i] = txt;
             }
+
+            // Bouton "Ouvrir le fichier", à gauche des filtres
+            openFileButton = CreateRect("OpenLogFile", background);
+            openFileButton.anchorMin = openFileButton.anchorMax = new Vector2(1, 1);
+            openFileButton.pivot = new Vector2(1, 1);
+            openFileButton.sizeDelta = new Vector2(OpenFileButtonWidth, 36);
+            openFileButton.anchoredPosition = new Vector2(-20 - 3 * (FilterButtonWidth + FilterButtonGap), -12);
+            Image openImg = openFileButton.gameObject.AddComponent<Image>();
+            openImg.color = new Color(0.12f, 0.25f, 0.42f, 1f);
+            openImg.raycastTarget = false;
+            RectTransform openLabel = CreateRect("Label", openFileButton);
+            Stretch(openLabel, 8, 8, 0, 0);
+            Text openTxt = openLabel.gameObject.AddComponent<Text>();
+            openTxt.font = font;
+            openTxt.fontSize = 17;
+            openTxt.fontStyle = FontStyle.Bold;
+            openTxt.alignment = TextAnchor.MiddleCenter;
+            openTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
+            openTxt.color = new Color(0.6f, 0.8f, 1f, 1f);
+            openTxt.text = "Ouvrir le fichier";
+            openTxt.raycastTarget = false;
 
             viewport = CreateRect("Viewport", background);
             Stretch(viewport, 20, 20, 60, 20);

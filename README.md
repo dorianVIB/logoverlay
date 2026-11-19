@@ -8,6 +8,7 @@ Overlay de logs affiché en jeu (build + éditeur), au-dessus de toute l'UI, à 
 | `Ctrl+H` | Afficher / masquer |
 | `Ctrl+L` | Vider les logs (overlay visible) |
 | Clic sur les boutons `Infos` / `Warnings` / `Erreurs`, ou `Ctrl+1` / `Ctrl+2` / `Ctrl+3` | Afficher / cacher ce niveau de logs |
+| Bouton `Ouvrir le fichier` ou `Ctrl+O` | Ouvre le fichier de log Unity (`Player.log` en build, `Editor.log` dans l'éditeur) |
 | Molette / `PageUp` / `PageDown` | Défiler |
 | `Fin` | Revenir en bas (suivi auto des nouveaux logs) |
 
