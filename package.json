@@ -1,0 +1,13 @@
+{
+  "name": "com.vib.logoverlay",
+  "version": "1.1.0",
+  "displayName": "VIB Log Overlay",
+  "description": "Affiche tous les logs Unity (Debug.Log/Warning/Error/Exception, tous threads) dans un overlay semi-transparent au-dessus de tout, en build comme en éditeur. Ctrl+H pour afficher/masquer. En VR, l'overlay n'apparaît que sur la fenêtre PC (miroir), jamais dans le casque. Aucune mise en place : il se crée tout seul au lancement.",
+  "unity": "2021.3",
+  "author": {
+    "name": "VIB"
+  },
+  "dependencies": {
+    "com.unity.ugui": "1.0.0"
+  }
+}
